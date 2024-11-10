@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Script Console</title>
+    <style>
+        #console {
+            width: 100%;
+            height: 300px;
+            background-color: #0d0d0d;
+            color: #00ff00;
+            font-family: monospace;
+            padding: 10px;
+            overflow-y: auto;
+            border: 1px solid #333;
+        }
+        #commandInput {
+            width: 100%;
+            padding: 8px;
+            font-family: monospace;
+        }
+        .error-message {
+            color: #ff3333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ms-Ping</h1>
+    <div id="console"></div>
+    <input type="text" id="commandInput" placeholder="Entrez votre commande ici...">
+    <button id="submitCommandButton">Exécuter</button>
+    <div id="stolenAmount"></div>
+    <div id="userAmounts"></div>
+
+    <script>
+        const consoleElement = document.getElementById('console');
+        const stolenAmountElement = document.getElementById('stolenAmount');
+        const userAmountsElement = document.getElementById('userAmounts');
+        const commandInputElement = document.getElementById('commandInput');
+        const submitCommandButton = document.getElementById('submitCommandButton');
+
+        let processSteps = [
+            "en",
+            "conf iso t",
+            "shipping data",
+            "ip address search",
+            "ressource generate",
+            "ping 172.27.2.0"
+        ];
+
+        let currentStep = 0;
+
+        function displayMessage(message, isError = false) {
+            if (isError) {
+                message = `<span class="error-message">${message}</span>`;
+            }
+            consoleElement.innerHTML += message + '\n';
+            consoleElement.scrollTop = consoleElement.scrollHeight;
+        }
+
+        function isValidIPv4(ip) {
+            const ipv4Pattern = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+            return ipv4Pattern.test(ip);
+        }
+
+        function executeCommand(command) {
+            displayMessage(`> ${command}`);
+
+            if (currentStep < processSteps.length) {
+                if (currentStep === 3) { // Vérification pour "ip address search"
+                    const commandParts = command.split(" ");
+                    if (commandParts[0] === "ip" && commandParts[1] === "address" && commandParts[2] === "search") {
+                        const ip = commandParts[3];
+                        if (isValidIPv4(ip)) {
+                            currentStep++;
+                        } else {
+                            displayMessage("Erreur : Une adresse IPv4 valide est requise pour cette commande (par exemple, ip address search 192.168.200.3).", true);
+                            resetOutputs();
+                            return;
+                        }
+                    } else {
+                        displayMessage("Commande invalide pour cette étape.", true);
+                        resetOutputs();
+                        return;
+                    }
+                } else if (command.startsWith(processSteps[currentStep])) {
+                    currentStep++;
+                    if (currentStep === processSteps.length) {
+                        displayMessage("Toutes les commandes exécutées. Initialisation au traitement...");
+                        simulateDecoding();
+                    }
+                } else {
+                    displayMessage("Commande invalide. Réessayez.", true);
+                    resetOutputs();
+                }
+            }
+        }
+
+        function resetOutputs() {
+            stolenAmountElement.innerHTML = '';
+            userAmountsElement.innerHTML = '';
+            currentStep = 0;
+        }
+
+        function simulateDecoding() {
+            const loadingMessages = [
+                "Initialisation du déchiffrement...",
+                "Decrypting secure data...",
+                "Инициализация расшифровки...",
+                "فك التشفير جارٍ...",
+                "Extraction des informations sensibles...",
+                "Sensitive data extraction in progress...",
+                "Извлечение конфиденциальной информации...",
+                "استخراج البيانات الحساسة...",
+                "Récupération des données bancaires...",
+                "Retrieving banking information...",
+                "Извлечение банковских данных...",
+                "استرجاع المعلومات البنكية...",
+                "Tentatives de contournement des systèmes de sécurité...",
+                "Bypassing security systems attempts...",
+                "Попытки обойти системы безопасности..."
+            ];
+
+            let loadingIndex = 0;
+
+            const interval = setInterval(() => {
+                if (loadingIndex < loadingMessages.length) {
+                    displayMessage(loadingMessages[loadingIndex]);
+                    loadingIndex++;
+                } else {
+                    clearInterval(interval);
+                    simulateExfiltration();
+                }
+            }, 1000);
+        }
+
+        function simulateExfiltration() {
+            setTimeout(() => {
+                const successChance = Math.random() < 0.0;
+
+                if (successChance) {
+                    const exfiltratedAmount = generateRandomExfiltratedAmount();
+                    const successMessage = `Exfiltration réussie : ${exfiltratedAmount} FCFA`;
+                    displayMessage(successMessage);
+                    stolenAmountElement.innerHTML = successMessage;
+                } else {
+                    const failureMessage = "Échec de l'exfiltration. Virus détecté, votre position est repérée. Veuillez changer d'approche.";
+                    displayMessage(failureMessage, true);
+                    stolenAmountElement.innerHTML = '';
+                    userAmountsElement.innerHTML = '';
+                }
+                if (successChance) {
+                    userAmountsElement.innerHTML = generateUserAmounts(5);
+                }
+            }, 2000);
+        }
+
+        submitCommandButton.addEventListener('click', () => {
+            const command = commandInputElement.value.trim();
+            if (command) {
+                executeCommand(command);
+                commandInputElement.value = '';
+            }
+        });
+
+        commandInputElement.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                submitCommandButton.click();
+            }
+        });
+    </script>
+</body>
+</html>
